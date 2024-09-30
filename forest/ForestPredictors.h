@@ -30,6 +30,8 @@ ForestPredictor survival_predictor(uint num_threads, size_t num_failures, int pr
 
 ForestPredictor causal_survival_predictor(uint num_threads);
 
+ForestPredictor multi_causal_survival_predictor(uint num_threads); //추가
+
 } // namespace grf
 
 #endif //GRF_FORESTPREDICTORS_H

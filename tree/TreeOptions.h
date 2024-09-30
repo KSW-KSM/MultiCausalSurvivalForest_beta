@@ -19,9 +19,10 @@
 #define GRF_TREEOPTIONS_H
 
 #include "../commons/globals.h"
-#include "../commons/Data.h"
 
 namespace grf {
+
+class Data;
 
 class TreeOptions {
 public:
@@ -66,7 +67,10 @@ public:
   bool get_mahalanobis() const;
   Eigen::MatrixXd get_sigma() const;
 
+  int get_num_treatments() const { return num_treatments; } //추가
+
 private:
+  int num_treatments; //추가
   uint mtry;
   uint min_node_size;
   bool honesty;

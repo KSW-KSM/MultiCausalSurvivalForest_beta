@@ -19,16 +19,18 @@
 #include "../prediction/RegressionPredictionStrategy.h"
 #include "../prediction/MultiRegressionPredictionStrategy.h"
 #include "../prediction/CausalSurvivalPredictionStrategy.h"
+#include "../prediction/MultiCausalSurvivalPredictionStrategy.h" //추가
 
 #include "../relabeling/NoopRelabelingStrategy.h"
 #include "../relabeling/MultiNoopRelabelingStrategy.h"
 #include "../relabeling/CausalSurvivalRelabelingStrategy.h"
+#include "../relabeling/MultiCausalSurvivalRelabelingStrategy.h" //추가
 
 #include "../splitting/factory/MultiRegressionSplittingRuleFactory.h"
 #include "../splitting/factory/RegressionSplittingRuleFactory.h"
 #include "../splitting/factory/SurvivalSplittingRuleFactory.h"
 #include "../splitting/factory/CausalSurvivalSplittingRuleFactory.h"
-
+#include "../splitting/factory/MultiCausalSurvivalSplittingRuleFactory.h" //추가
 namespace grf {
 
 ForestTrainer regression_trainer() {
@@ -67,6 +69,18 @@ ForestTrainer causal_survival_trainer(bool stabilize_splits) {
         ? std::unique_ptr<SplittingRuleFactory>(new CausalSurvivalSplittingRuleFactory())
         : std::unique_ptr<SplittingRuleFactory>(new RegressionSplittingRuleFactory());
     std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new CausalSurvivalPredictionStrategy());
+
+    return ForestTrainer(std::move(relabeling_strategy),
+        std::move(splitting_rule_factory),
+        std::move(prediction_strategy));
+}
+//구현 완료
+ForestTrainer multi_causal_survival_trainer(bool stabilize_splits) {
+    std::unique_ptr<RelabelingStrategy> relabeling_strategy(new MultiCausalSurvivalRelabelingStrategy());
+    std::unique_ptr<SplittingRuleFactory> splitting_rule_factory = stabilize_splits
+        ? std::unique_ptr<SplittingRuleFactory>(new MultiCausalSurvivalSplittingRuleFactory())
+        : nullptr; // 회귀는 없음
+    std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new MultiCausalSurvivalPredictionStrategy());
 
     return ForestTrainer(std::move(relabeling_strategy),
         std::move(splitting_rule_factory),

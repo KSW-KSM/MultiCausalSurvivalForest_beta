@@ -20,11 +20,11 @@
 
 #include <vector>
 
-#include "../commons/Data.h"
+
 #include "RelabelingStrategy.h"
 
 namespace grf {
-
+class Data;
 class CausalSurvivalRelabelingStrategy final: public RelabelingStrategy {
 public:
   bool relabel(

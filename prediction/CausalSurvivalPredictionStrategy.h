@@ -21,14 +21,13 @@
 
 #include <cstddef>
 
-#include "../commons/Data.h"
 #include "Prediction.h"
 #include "OptimizedPredictionStrategy.h"
 #include "PredictionValues.h"
 #include "ObjectiveBayesDebiaser.h"
 
 namespace grf {
-
+class Data;
 class CausalSurvivalPredictionStrategy final: public OptimizedPredictionStrategy {
 public:
   static const std::size_t NUMERATOR;

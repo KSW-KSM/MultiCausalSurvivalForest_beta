@@ -21,7 +21,6 @@
 #include <memory>
 
 #include "../Eigen/Dense"
-#include "../commons/Data.h"
 #include "../prediction/OptimizedPredictionStrategy.h"
 #include "../relabeling/RelabelingStrategy.h"
 #include "../sampling/RandomSampler.h"
@@ -30,6 +29,8 @@
 #include "TreeOptions.h"
 
 namespace grf {
+
+class Data;
 
 class TreeTrainer {
 public:

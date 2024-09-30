@@ -18,13 +18,12 @@
 #ifndef GRF_MULTIREGRESSIONPREDICTIONSTRATEGY_H
 #define GRF_MULTIREGRESSIONPREDICTIONSTRATEGY_H
 
-#include "../commons/Data.h"
 #include "OptimizedPredictionStrategy.h"
 #include "PredictionValues.h"
 #include "ObjectiveBayesDebiaser.h"
 
 namespace grf {
-
+class Data;
 class MultiRegressionPredictionStrategy final: public OptimizedPredictionStrategy {
 public:
   MultiRegressionPredictionStrategy(size_t num_outcomes);

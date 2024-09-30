@@ -20,6 +20,7 @@
 #include "../prediction/MultiRegressionPredictionStrategy.h"
 #include "../prediction/SurvivalPredictionStrategy.h"
 #include "../prediction/CausalSurvivalPredictionStrategy.h"
+#include "../prediction/MultiCausalSurvivalPredictionStrategy.h" //추가
 
 namespace grf {
 
@@ -46,6 +47,12 @@ ForestPredictor causal_survival_predictor(uint num_threads) {
 	num_threads = ForestOptions::validate_num_threads(num_threads);
 	std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new CausalSurvivalPredictionStrategy());
 	return ForestPredictor(num_threads, std::move(prediction_strategy));
+}
+
+ForestPredictor multi_causal_survival_predictor(uint num_threads) { //추가 //생성자도 추가
+  num_threads = ForestOptions::validate_num_threads(num_threads);
+  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new MultiCausalSurvivalPredictionStrategy());
+  return ForestPredictor(num_threads, std::move(prediction_strategy));
 }
 
 } // namespace grf

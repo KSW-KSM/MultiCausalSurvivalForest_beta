@@ -20,11 +20,11 @@
 
 #include <memory>
 
-#include "../../commons/Data.h"
 #include "../SplittingRule.h"
 #include "../../tree/TreeOptions.h"
 
 namespace grf {
+class Data;
 
 class SplittingRuleFactory {
 public:

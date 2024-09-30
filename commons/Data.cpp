@@ -70,12 +70,10 @@ void Data::set_weight_index(size_t index) {
 
 void Data::set_causal_survival_numerator_index(size_t index) {
   this->causal_survival_numerator_index = index;
-  disallowed_split_variables.insert(index);
 }
 
 void Data::set_causal_survival_denominator_index(size_t index) {
   this->causal_survival_denominator_index = index;
-  disallowed_split_variables.insert(index);
 }
 
 void Data::set_status_index(size_t index) {
@@ -137,17 +135,36 @@ size_t Data::get_num_outcomes() const {
     return 1;
   }
 }
-
+/*
 size_t Data::get_num_treatments() const {
   if (treatment_index.has_value()) {
     return treatment_index.value().size();
   } else {
     return 1;
   }
-}
+}*/
 
 const std::set<size_t>& Data::get_disallowed_split_variables() const {
   return disallowed_split_variables;
 }
+
+// 중복 정의 제거
+// size_t Data::get_num_treatments() const {
+//   return num_treatments;
+// }
+
+// double Data::get_causal_survival_numerator(size_t row) const {
+//   if (causal_survival_numerator_index != -1) {
+//     return get(row, causal_survival_numerator_index);
+//   }
+//   return 0.0;
+// }
+
+// double Data::get_causal_survival_denominator(size_t row) const {
+//   if (causal_survival_denominator_index != -1) {
+//     return get(row, causal_survival_denominator_index);
+//   }
+//   return 1.0;
+// }
 
 } // namespace grf

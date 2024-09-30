@@ -21,13 +21,13 @@
 #include <memory>
 #include <vector>
 
-#include "Data.h"
 #include "globals.h"
-
+#include "../Eigen/Dense"
 #include <Rcpp.h>
+#include "../commons/Data.h"
 
 namespace grf {
-
+class Data;
 /**
  * Split sequence start..end in num_parts parts with sizes as equal as possible.
  * @param result Result vector of size num_parts+1. Ranges for the parts are then result[0]..result[1]-1, result[1]..result[2]-1, ..

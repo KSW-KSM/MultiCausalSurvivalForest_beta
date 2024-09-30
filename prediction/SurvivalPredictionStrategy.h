@@ -18,12 +18,11 @@
 #ifndef GRF_SURVIVALPREDICTIONSTRATEGY_H
 #define GRF_SURVIVALPREDICTIONSTRATEGY_H
 
-#include "../commons/Data.h"
 #include "DefaultPredictionStrategy.h"
 #include "PredictionValues.h"
 
 namespace grf {
-
+class Data;
 class SurvivalPredictionStrategy final: public DefaultPredictionStrategy {
 public:
   static const int KAPLAN_MEIER;

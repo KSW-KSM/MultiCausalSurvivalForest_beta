@@ -30,6 +30,7 @@ ForestTrainer survival_trainer();
 
 ForestTrainer causal_survival_trainer(bool stabilize_splits);
 
+ForestTrainer multi_causal_survival_trainer(bool stabilize_splits); //추가
 } // namespace grf
 
 #endif //GRF_FORESTTRAINERS_H

@@ -21,12 +21,12 @@
 #include <vector>
 
 #include "../commons/globals.h"
-#include "../commons/Data.h"
 #include "../sampling/RandomSampler.h"
 #include "../prediction/PredictionValues.h"
 #include "../splitting/SplittingRule.h"
 
 namespace grf {
+class Data;
 
 class Tree {
 public:

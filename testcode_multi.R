@@ -1,5 +1,6 @@
+chooseCRANmirror(ind=1)
+install.packages("Rcpp", type = "source")
 # random forest 
-
 ### Clean Memory ###
 rm(list=ls())
 #args <- commandArgs(trailingOnly = TRUE)
@@ -18,7 +19,9 @@ library(randomForestSRC)
 library(MASS)
 library(pec)
 ptm <- proc.time()
-setwd("C:/CRgrf")
+#작업 디렉토리위치를 잡아줍니다.
+setwd("/Users/seong-ugang/Desktop/학교/공모전/konkuk_lab/compriskCRgrf")
+#로드 하기 전에, sourceCpp.R 파일의 default_dir를 현재 디렉토리로 경로를 수정해줍니다.
 source("sourceCpp.R")
 rho = 0.9
 nump = 20

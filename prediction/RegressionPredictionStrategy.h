@@ -18,13 +18,12 @@
 #ifndef GRF_REGRESSIONPREDICTIONSTRATEGY_H
 #define GRF_REGRESSIONPREDICTIONSTRATEGY_H
 
-#include "../commons/Data.h"
 #include "OptimizedPredictionStrategy.h"
 #include "PredictionValues.h"
 #include "ObjectiveBayesDebiaser.h"
 
 namespace grf {
-
+class Data;
 class RegressionPredictionStrategy final: public OptimizedPredictionStrategy {
 public:
   size_t prediction_value_length() const;

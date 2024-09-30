@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "../Eigen/Dense"
+
 #include "globals.h"
 #include "../optional/optional.hpp"
 
@@ -40,17 +41,45 @@ namespace grf {
 class Data {
 public:
   Data(const double* data_ptr, size_t num_rows, size_t num_cols);
-
-  /**
-   * Convenience constructors for unit test.
-   * The intended use case is with storage (data vector) mananaged
-   * elsewhere, i.e.
-   * std::vector<double> data_vector {1, 2, 3, etc};
-   * Data grf_data_wrapper(data_vector, num_rows, num_cols);
-   */
   Data(const std::vector<double>& data, size_t num_rows, size_t num_cols);
-
   Data(const std::pair<std::vector<double>, std::vector<size_t>>& data);
+
+  /*추가*/
+
+  // 인라인 함수로 정의
+  double get_causal_survival_numerator(size_t row) const {
+    return get(row, causal_survival_numerator_index.value());
+  }
+
+  double get_causal_survival_denominator(size_t row) const {
+    return get(row, causal_survival_denominator_index.value());
+  }
+
+  // 선언만 남기고 정의는 Data.cpp로 이동
+  void set_causal_survival_numerator_index(size_t index);
+  void set_causal_survival_denominator_index(size_t index);
+
+  // 다중 처리를 위한 새 메소드 추가
+  double get_multi_causal_survival_numerator(size_t row, size_t treatment) const {
+    return get(row, multi_causal_survival_numerator_index[treatment][0]);
+  }
+
+  double get_multi_causal_survival_denominator(size_t row, size_t treatment) const {
+    return get(row, multi_causal_survival_denominator_index[treatment][0]);
+  }
+
+  // 다중 처리를 위한 메소드는 그대로 유지
+  void set_multi_causal_survival_numerator_index(const std::vector<std::vector<size_t>>& index) {
+    this->multi_causal_survival_numerator_index = index;
+  }
+
+  void set_multi_causal_survival_denominator_index(const std::vector<std::vector<size_t>>& index) {
+    this->multi_causal_survival_denominator_index = index;
+  }
+  // 중복 선언 제거
+  // size_t get_num_treatments() const;
+  // double get_causal_survival_numerator(size_t row) const;
+  // double get_causal_survival_denominator(size_t row) const;
 
   void set_outcome_index(size_t index);
 
@@ -63,10 +92,6 @@ public:
   void set_instrument_index(size_t index);
 
   void set_weight_index(size_t index);
-
-  void set_causal_survival_numerator_index(size_t index);
-
-  void set_causal_survival_denominator_index(size_t index);
 
   void set_status_index(size_t index);
 
@@ -116,15 +141,13 @@ public:
 
   size_t get_status_max() const;
 
-  double get_causal_survival_numerator(size_t row) const;
-
-  double get_causal_survival_denominator(size_t row) const;
-
   bool is_failure(size_t row) const;
 
   bool is_failure_status(size_t row, size_t status) const;
 
   double get(size_t row, size_t col) const;
+
+  // 새로운 멤버 함수 선언 추가
 
 private:
   const double* data_ptr;
@@ -132,6 +155,8 @@ private:
   size_t num_cols;
 
   std::set<size_t> disallowed_split_variables;
+  std::vector<std::vector<size_t>> multi_causal_survival_numerator_index; // 다중 처리를 위한 새 변수
+  std::vector<std::vector<size_t>> multi_causal_survival_denominator_index; // 다중 처리를 위한 새 변수
   nonstd::optional<std::vector<size_t>> outcome_index;
   nonstd::optional<std::vector<size_t>> treatment_index;
   nonstd::optional<size_t> instrument_index;
@@ -140,75 +165,10 @@ private:
   nonstd::optional<size_t> causal_survival_denominator_index;
   nonstd::optional<size_t> status_index;
   nonstd::optional<size_t> status_max;
+  size_t num_treatments; // num_treatments 멤버 변수 추가
 };
 
-// inline appropriate getters
-inline double Data::get_outcome(size_t row) const {
-  return get(row, outcome_index.value()[0]);
-}
-
-inline Eigen::VectorXd Data::get_outcomes(size_t row) const {
-  Eigen::VectorXd out(outcome_index.value().size());
-  for (size_t i = 0; i < outcome_index.value().size(); i++) {
-    out(i) = get(row, outcome_index.value()[i]);
-  }
-  return out;
-}
-
-inline double Data::get_treatment(size_t row) const {
-  return get(row, treatment_index.value()[0]);
-}
-
-inline Eigen::VectorXd Data::get_treatments(size_t row) const {
-  Eigen::VectorXd out(treatment_index.value().size());
-  for (size_t i = 0; i < treatment_index.value().size(); i++) {
-    out(i) = get(row, treatment_index.value()[i]);
-  }
-  return out;
-}
-
-inline double Data::get_instrument(size_t row) const {
-  return get(row, instrument_index.value());
-}
-
-inline double Data::get_weight(size_t row) const {
-  if (weight_index.has_value()) {
-    return get(row, weight_index.value());
-  } else {
-    return 1.0;
-  }
-}
-
-inline size_t Data::get_status(size_t row) const {
-    return get(row, status_index.value());
-}
-
-inline size_t Data::get_status_max() const {
-    if (status_max.has_value()) {
-        return status_max.value();
-    }
-    else {
-        return 1;
-    }
-}
-
-inline double Data::get_causal_survival_numerator(size_t row) const {
-  return get(row, causal_survival_numerator_index.value());
-}
-
-inline double Data::get_causal_survival_denominator(size_t row) const {
-  return get(row, causal_survival_denominator_index.value());
-}
-
-inline bool Data::is_failure(size_t row) const {
-  return get(row, status_index.value()) > 0.0;
-}
-inline bool Data::is_failure_status(size_t row, size_t status) const {
-    return get(row, status_index.value()) == status;
-}
-inline double Data::get(size_t row, size_t col) const {
-  return data_ptr[col * num_rows + row];
-}
+// 인라인 함수 정의 제거
 
 } // namespace grf
 #endif /* GRF_DATA_H_ */

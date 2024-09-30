@@ -21,11 +21,11 @@
 #include <vector>
 
 #include "../commons/globals.h"
-#include "../commons/Data.h"
 #include "Prediction.h"
 #include "PredictionValues.h"
 
 namespace grf {
+class Data;
 
 /**
  * A prediction strategy defines how predictions are computed over test samples.

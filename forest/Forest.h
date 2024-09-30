@@ -18,13 +18,14 @@
 #ifndef GRF_FOREST_H_
 #define GRF_FOREST_H_
 
-#include "../commons/Data.h"
 #include "../commons/globals.h"
 #include "ForestOptions.h"
 #include "../tree/TreeTrainer.h"
 #include "../tree/Tree.h"
 
 namespace grf {
+
+class Data;
 
 class Forest {
 public:

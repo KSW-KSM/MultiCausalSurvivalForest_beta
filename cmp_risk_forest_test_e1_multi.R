@@ -280,8 +280,9 @@ Q.hat[, horizon.cr.index:ncol(Q.hat)] <- 0
   validate_observations(eta[["numerator2"]], X)
   validate_observations(eta[["denominator2"]], X)
   
+  source("~/Desktop/학교/공모전/konkuk_lab/compriskCRgrf/input_utilities.R")
   # ================================================================================#
-  data <- create_train_matrices(X,
+  data <- create_train_multi_matrices(X,
                                 treatment1 = W.centered1,
                                 treatment2  = W.centered2,
                                 survival.numerator1 = eta[["numerator1"]],
@@ -289,7 +290,21 @@ Q.hat[, horizon.cr.index:ncol(Q.hat)] <- 0
                                 survival.numerator2 = eta[["numerator2"]],
                                 survival.denominator2 = eta[["denominator2"]],
                                 censor = D,
-                                sample.weights = sample.weights)
+                                sample.weights = sample.weights)#create_train_muti_matrices로 변경
+  #========
+  
+  #create_train_matrices 기존 -> 위의 매개변수를 받을 수 있도록 수정
+  #function(X,
+  #         outcome = NULL,
+  #         treatment = NULL,
+  #         instrument = NULL,
+  #         survival.numerator = NULL,
+  #         survival.denominator = NULL,
+  #         status = NULL,
+  #         sample.weights = FALSE) {
+  
+  #========
+  data
   sigma_ = matrix()
 
   args <- list(num.trees = num.trees,
@@ -309,8 +324,9 @@ Q.hat[, horizon.cr.index:ncol(Q.hat)] <- 0
                num.threads = num.threads,
                seed = seed, mahalanobis, sigma = sigma_)
 
-  forest <- do.call.rcpp(causal_survival_train, c(data, args))
-  class(forest) <- c("causal_survival_forest", "grf")
+  #forest <- do.call.rcpp(causal_survival_train, c(data, args))#causal_survival_train -> muti_causal_survival_train 으로 구현
+  forest <- do.call.rcpp(multi_causal_survival_train, c(data, args))
+  class(forest) <- c("multi_causal_survival_forest", "grf")
   forest[["seed"]] <- seed
   forest[["_eta"]] <- eta
   forest[["X.orig"]] <- X
@@ -328,6 +344,8 @@ Q.hat[, horizon.cr.index:ncol(Q.hat)] <- 0
 
   forest
 
+#===============  
+  
 ### Buckley-James ###
   numerator.one_bj <- (D * (fY - Y.hat) + (1 - D) * (Q.Y.hat - Y.hat)) * W.centered
   numerator_bj <- numerator.one_bj
@@ -365,7 +383,7 @@ Q.hat[, horizon.cr.index:ncol(Q.hat)] <- 0
                num.threads = num.threads,
                seed = seed, mahalanobis, sigma = sigma_bj)
 
-  forest_bj <- do.call.rcpp(causal_survival_train, c(data_bj, args_bj))
+  forest_bj <- do.call.rcpp(causal_survival_train, c(data_bj, args_bj)) #수정
   class(forest_bj) <- c("causal_survival_forest", "grf")
   forest_bj[["seed"]] <- seed
   forest_bj[["_eta"]] <- eta_bj

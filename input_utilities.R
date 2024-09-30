@@ -243,6 +243,101 @@ create_test_matrices <- function(X) {
   out
 }
 
+#=====추가=====
+create_train_multi_matrices <- function(X,
+                                        outcome = NULL,
+                                        treatment1 = NULL,
+                                        treatment2 = NULL,
+                                        instrument = NULL,
+                                        survival.numerator1 = NULL,
+                                        survival.denominator1 = NULL,
+                                        survival.numerator2 = NULL,
+                                        survival.denominator2 = NULL,
+                                        censor = NULL,
+                                        sample.weights = FALSE) {
+  # 결과를 저장할 리스트 초기화
+  out <- list()
+  # X의 열 수에서 1을 뺀 값으로 오프셋 초기화
+  offset <- ncol(X) - 1
+  
+  # 결과 변수가 있으면 인덱스 저장
+  if (!is.null(outcome)) {
+    out[["outcome.index"]] <- (offset + 1):(offset + NCOL(outcome))
+    offset <- offset + NCOL(outcome)
+  }
+  
+  # 첫 번째 처리 변수가 있으면 인덱스 저장
+  if (!is.null(treatment1)) {
+    out[["treatment1.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 두 번째 처리 변수가 있으면 인덱스 저장
+  if (!is.null(treatment2)) {
+    out[["treatment2.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 도구 변수가 있으면 인덱스 저장
+  if (!is.null(instrument)) {
+    out[["instrument.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 첫 번째 처리에 대한 생존 분석 분자가 있으면 인덱스 저장
+  if (!is.null(survival.numerator1)) {
+    out[["causal.survival.numerator1.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 첫 번째 처리에 대한 생존 분석 분모가 있으면 인덱스 저장
+  if (!is.null(survival.denominator1)) {
+    out[["causal.survival.denominator1.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 두 번째 처리에 대한 생존 분석 분자가 있으면 인덱스 저장
+  if (!is.null(survival.numerator2)) {
+    out[["causal.survival.numerator2.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 두 번째 처리에 대한 생존 분석 분모가 있으면 인덱스 저장
+  if (!is.null(survival.denominator2)) {
+    out[["causal.survival.denominator2.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 중도 절단 변수가 있으면 인덱스 저장
+  if (!is.null(censor)) {
+    out[["censor.index"]] <- offset + 1
+    offset <- offset + 1
+  }
+  
+  # 표본 가중치 처리
+  if (is.logical(sample.weights)) {
+    sample.weights <- NULL
+  } else {
+    out[["sample.weight.index"]] <- offset + 1
+    if (is.null(sample.weights)) {
+      out[["use.sample.weights"]] <- FALSE
+    } else {
+      out[["use.sample.weights"]] <- TRUE
+    }
+  }
+  
+  # X를 행렬로 변환
+  X <- as.matrix(X)
+  # 모든 변수를 포함하는 훈련 행렬 생성
+  out[["train.matrix"]] <- as.matrix(cbind(X, outcome, treatment1, treatment2, instrument, 
+                                           survival.numerator1, survival.denominator1, 
+                                           survival.numerator2, survival.denominator2, 
+                                           censor, sample.weights))
+  # 결과 반환
+  out
+}
+#============
+
 observation_weights <- function(forest) {
   # Case 1: No sample.weights
   if (is.null(forest$sample.weights)) {
