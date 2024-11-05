@@ -22,9 +22,9 @@
 
 
 #include "RelabelingStrategy.h"
+#include "../commons/Data.h"
 
 namespace grf {
-class Data;
 class CausalSurvivalRelabelingStrategy final: public RelabelingStrategy {
 public:
   bool relabel(

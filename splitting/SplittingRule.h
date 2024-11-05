@@ -19,12 +19,10 @@
 #define GRF_SPLITTINGRULE_H
 
 #include <vector>
-#include "../commons/data.h"
+#include "../commons/Data.h"
 #include "../Eigen/Dense"
 
 namespace grf {
-
-class Data;
 
 class SplittingRule {
   

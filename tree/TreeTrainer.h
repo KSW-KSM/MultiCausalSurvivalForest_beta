@@ -27,10 +27,10 @@
 #include "../splitting/factory/SplittingRuleFactory.h"
 #include "Tree.h"
 #include "TreeOptions.h"
+#include "../commons/Data.h"
 
 namespace grf {
 
-class Data;
 
 class TreeTrainer {
 public:

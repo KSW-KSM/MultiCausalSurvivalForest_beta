@@ -17,6 +17,7 @@
 
 #include <cmath>
 #include "RegressionPredictionStrategy.h"
+#include "../commons/Data.h"
 
 namespace grf {
 

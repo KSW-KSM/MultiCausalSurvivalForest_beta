@@ -1,7 +1,13 @@
 chooseCRANmirror(ind=1)
-install.packages("Rcpp", type = "source")
+install.packages("prodlim")
+install.packages("Rcpp", dependencies=TRUE)
+install.packages("grf")
 # random forest 
 ### Clean Memory ###
+
+# 설치 후 라이브러리 로드
+library(grf)
+
 rm(list=ls())
 #args <- commandArgs(trailingOnly = TRUE)
 #aa <- args[1]
@@ -20,7 +26,7 @@ library(MASS)
 library(pec)
 ptm <- proc.time()
 #작업 디렉토리위치를 잡아줍니다.
-setwd("/Users/seong-ugang/Desktop/학교/공모전/konkuk_lab/compriskCRgrf")
+setwd("/Users/imac/Documents/연구실/조영주교수님_Lab/MultiCausalSurvivalForest/MultiCausalSurvivalForest_beta")
 #로드 하기 전에, sourceCpp.R 파일의 default_dir를 현재 디렉토리로 경로를 수정해줍니다.
 source("sourceCpp.R")
 rho = 0.9

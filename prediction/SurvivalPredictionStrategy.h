@@ -20,9 +20,9 @@
 
 #include "DefaultPredictionStrategy.h"
 #include "PredictionValues.h"
+#include "../commons/Data.h"
 
 namespace grf {
-class Data;
 class SurvivalPredictionStrategy final: public DefaultPredictionStrategy {
 public:
   static const int KAPLAN_MEIER;

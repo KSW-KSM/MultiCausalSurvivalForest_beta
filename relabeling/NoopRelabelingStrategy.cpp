@@ -15,7 +15,8 @@
   along with grf. If not, see <http://www.gnu.org/licenses/>.
  #-------------------------------------------------------------------------------*/
 
- #include "NoopRelabelingStrategy.h"
+#include "NoopRelabelingStrategy.h"
+#include "../commons/Data.h"
 
  namespace grf {
 

@@ -27,7 +27,8 @@ TreeOptions::TreeOptions(uint mtry,
                          double alpha,
                          double imbalance_penalty,
                          bool mahalanobis,
-                         Eigen::MatrixXd sigma):
+                         Eigen::MatrixXd sigma,
+                         int num_treatments):
   mtry(mtry),
   min_node_size(min_node_size),
   honesty(honesty),
@@ -35,7 +36,9 @@ TreeOptions::TreeOptions(uint mtry,
   honesty_prune_leaves(honesty_prune_leaves),
   alpha(alpha),
   imbalance_penalty(imbalance_penalty),
-  mahalanobis(mahalanobis), sigma(sigma) {}
+  mahalanobis(mahalanobis),
+  sigma(sigma),
+  num_treatments(num_treatments) {}
 
 uint TreeOptions::get_mtry() const {
   return mtry;
@@ -70,5 +73,9 @@ bool TreeOptions::get_mahalanobis() const {
 }
 Eigen::MatrixXd TreeOptions::get_sigma() const {
     return sigma;
+}
+
+int TreeOptions::get_num_treatments() const {
+  return num_treatments;
 }
 } // namespace grf

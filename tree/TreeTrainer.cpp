@@ -36,98 +36,111 @@ namespace grf {
         RandomSampler& sampler,
         const std::vector<size_t>& clusters,
         const TreeOptions& options) const {
-        std::vector<std::vector<size_t>> child_nodes;
+        
+    Rcpp::Rcout << "\n=== Starting Tree Training ===" << std::endl;
+    Rcpp::Rcout << "Input clusters size: " << clusters.size() << std::endl;
+    
+    try {
+        // 초기 노드 설정
+        std::vector<std::vector<size_t>> child_nodes(2);
         std::vector<std::vector<size_t>> nodes;
         std::vector<size_t> split_vars;
         std::vector<double> split_values;
         std::vector<bool> send_missing_left;
-
-        child_nodes.emplace_back();
-        child_nodes.emplace_back();
+        
         create_empty_node(child_nodes, nodes, split_vars, split_values, send_missing_left);
+        Rcpp::Rcout << "Created empty root node" << std::endl;
 
         std::vector<size_t> new_leaf_samples;
 
+        // Honesty 처리
         if (options.get_honesty()) {
+            Rcpp::Rcout << "Using honesty with fraction: " << options.get_honesty_fraction() << std::endl;
+            
             std::vector<size_t> tree_growing_clusters;
             std::vector<size_t> new_leaf_clusters;
-            sampler.subsample(clusters, options.get_honesty_fraction(), tree_growing_clusters, new_leaf_clusters);
-
+            sampler.subsample(clusters, options.get_honesty_fraction(), 
+                            tree_growing_clusters, new_leaf_clusters);
+            
             sampler.sample_from_clusters(tree_growing_clusters, nodes[0]);
             sampler.sample_from_clusters(new_leaf_clusters, new_leaf_samples);
-        }
-        else {
+            
+            Rcpp::Rcout << "Split samples - Growing: " << nodes[0].size() 
+                       << ", New leaf: " << new_leaf_samples.size() << std::endl;
+        } else {
             sampler.sample_from_clusters(clusters, nodes[0]);
+            Rcpp::Rcout << "Sampled " << nodes[0].size() << " samples for tree" << std::endl;
         }
 
-        // nodes[0].size() is the number of samples subsampled for this tree.
-
-        std::unique_ptr<SplittingRule> splitting_rule = splitting_rule_factory->create(
-            nodes[0].size(), options);
-
+        // Splitting rule 설정
+        //===========================
+        std::unique_ptr<SplittingRule> splitting_rule = 
+            splitting_rule_factory->create(nodes[0].size(), options);
+        Rcpp::Rcout << "Created splitting rule" << std::endl;
+        //===========================
+        
+        // 노드 분할
         size_t num_open_nodes = 1;
         size_t i = 0;
-        Eigen::ArrayXXd responses_by_sample(data.get_num_rows(), relabeling_strategy->get_response_length());
-
-       // int _N = 0;
+        Eigen::ArrayXXd responses_by_sample(data.get_num_rows(), 
+                                          relabeling_strategy->get_response_length());
+        
+        Rcpp::Rcout << "\n--- Starting Node Splitting ---" << std::endl;
         while (num_open_nodes > 0) {
-            //
-            /*
-            _N++;
-            Rcpp::Rcout << "[[[iteration(" << _N << "), Nodes: " << '\n';
-            std::vector<std::vector<size_t>>::iterator itr_out = nodes.begin();
-            int _n = 0;
-            for (; itr_out != nodes.end(); ++itr_out) {
-                _n++;
-                std::vector<size_t>::iterator itr_in = itr_out->begin();
-                Rcpp::Rcout << "(" << _n << ") ";
-                for (; itr_in != itr_out->end(); ++itr_in) {
-                    Rcpp::Rcout << *itr_in << ", ";
-                }
-                Rcpp::Rcout << '\n';
+            if (i % 100 == 0) {
+                Rcpp::Rcout << "Processing node " << i 
+                           << ", Open nodes: " << num_open_nodes << std::endl;
             }
-            Rcpp::Rcout << "]]]" << '\n';
-            //
-            */
-            bool is_leaf_node = split_node(i,
-                data,
-                splitting_rule,
-                sampler,
-                child_nodes,
-                nodes,
-                split_vars,
-                split_values,
-                send_missing_left,
-                responses_by_sample,
-                options);
+            
+            bool is_leaf_node = split_node(i, data, splitting_rule, sampler,
+                                         child_nodes, nodes, split_vars, 
+                                         split_values, send_missing_left,
+                                         responses_by_sample, options);
+            
             if (is_leaf_node) {
                 --num_open_nodes;
-            }
-            else {
+            } else {
                 nodes[i].clear();
                 ++num_open_nodes;
             }
             ++i;
         }
+        Rcpp::Rcout << "Completed node splitting. Total nodes: " << i << std::endl;
 
+        // 트리 생성
         std::vector<size_t> drawn_samples;
         sampler.get_samples_in_clusters(clusters, drawn_samples);
-
+        
         std::unique_ptr<Tree> tree(new Tree(0, child_nodes, nodes,
-            split_vars, split_values, drawn_samples, send_missing_left, PredictionValues()));
+            split_vars, split_values, drawn_samples, send_missing_left, 
+            PredictionValues()));
+        Rcpp::Rcout << "Created tree structure" << std::endl;
 
+        // Honesty 적용
         if (!new_leaf_samples.empty()) {
-            repopulate_leaf_nodes(tree, data, new_leaf_samples, options.get_honesty_prune_leaves());
+            Rcpp::Rcout << "Repopulating leaf nodes with " 
+                       << new_leaf_samples.size() << " samples" << std::endl;
+            repopulate_leaf_nodes(tree, data, new_leaf_samples, 
+                                options.get_honesty_prune_leaves());
         }
 
-        PredictionValues prediction_values;
+        // 예측값 계산
         if (prediction_strategy != nullptr) {
-            prediction_values = prediction_strategy->precompute_prediction_values(tree->get_leaf_samples(), data);
+            Rcpp::Rcout << "Computing prediction values" << std::endl;
+            PredictionValues prediction_values = 
+                prediction_strategy->precompute_prediction_values(
+                    tree->get_leaf_samples(), data);
+            tree->set_prediction_values(prediction_values);
         }
-        tree->set_prediction_values(prediction_values);
 
+        Rcpp::Rcout << "=== Tree Training Completed ===\n" << std::endl;
         return tree;
+        
+    } catch (const std::exception& e) {
+        Rcpp::Rcout << "Error in tree training: " << e.what() << std::endl;
+        throw;
     }
+}
 
     void TreeTrainer::repopulate_leaf_nodes(const std::unique_ptr<Tree>& tree,
         const Data& data,

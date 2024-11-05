@@ -21,9 +21,8 @@
 #include "OptimizedPredictionStrategy.h"
 #include "PredictionValues.h"
 #include "ObjectiveBayesDebiaser.h"
-
+#include "../commons/Data.h"
 namespace grf {
-class Data;
 class MultiRegressionPredictionStrategy final: public OptimizedPredictionStrategy {
 public:
   MultiRegressionPredictionStrategy(size_t num_outcomes);

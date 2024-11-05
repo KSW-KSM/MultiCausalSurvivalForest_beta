@@ -19,10 +19,12 @@
 #define GRF_TREEOPTIONS_H
 
 #include "../commons/globals.h"
+#include "../Eigen/Dense"
+#include <Eigen/Dense>
+#include "../commons/Data.h"
 
 namespace grf {
 
-class Data;
 
 class TreeOptions {
 public:
@@ -34,7 +36,8 @@ public:
               double alpha,
               double imbalance_penalty,
               bool mahalanobis,
-              Eigen::MatrixXd sigma
+              Eigen::MatrixXd sigma,
+              int num_treatments = 2 //일반 생존 분석에서는 2로 설정
       );
 
   uint get_mtry() const;
@@ -67,7 +70,7 @@ public:
   bool get_mahalanobis() const;
   Eigen::MatrixXd get_sigma() const;
 
-  int get_num_treatments() const { return num_treatments; } //추가
+  int get_num_treatments() const;//추가
 
 private:
   int num_treatments; //추가

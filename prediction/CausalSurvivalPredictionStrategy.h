@@ -27,7 +27,6 @@
 #include "ObjectiveBayesDebiaser.h"
 
 namespace grf {
-class Data;
 class CausalSurvivalPredictionStrategy final: public OptimizedPredictionStrategy {
 public:
   static const std::size_t NUMERATOR;

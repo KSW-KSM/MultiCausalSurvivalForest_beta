@@ -1,5 +1,6 @@
 #include "../commons/utility.h"
 #include "MultiCausalSurvivalRelabelingStrategy.h"
+#include "../commons/Data.h"
 
 namespace grf {
 

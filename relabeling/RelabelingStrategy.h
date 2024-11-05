@@ -3,10 +3,9 @@
 
 #include <vector>
 #include "../Eigen/Dense"
+#include "../commons/Data.h"
 
 namespace grf {
-
-class Data; // 전방 선언
 
 /**
  * Produces a relabelled set of outcomes for a set of training samples. These outcomes

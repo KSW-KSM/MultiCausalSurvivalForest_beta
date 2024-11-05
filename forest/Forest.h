@@ -22,10 +22,9 @@
 #include "ForestOptions.h"
 #include "../tree/TreeTrainer.h"
 #include "../tree/Tree.h"
+#include "../commons/Data.h"
 
 namespace grf {
-
-class Data;
 
 class Forest {
 public:

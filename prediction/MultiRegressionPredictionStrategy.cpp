@@ -18,6 +18,7 @@
 #include "MultiRegressionPredictionStrategy.h"
 
 #include "../Eigen/Dense"
+#include "../commons/Data.h"
 
 namespace grf {
 

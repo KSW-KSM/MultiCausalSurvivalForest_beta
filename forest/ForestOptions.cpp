@@ -21,30 +21,33 @@
 
 #include "ForestOptions.h"
 #include "../tree/TreeOptions.h"
+#include "../commons/Data.h"
 
 namespace grf {
 
 ForestOptions::ForestOptions(uint num_trees,
-                             size_t ci_group_size,
-                             double sample_fraction,
-                             uint mtry,
-                             uint min_node_size,
-                             bool honesty,
-                             double honesty_fraction,
-                             bool honesty_prune_leaves,
-                             double alpha,
-                             double imbalance_penalty,
-                             uint num_threads,
-                             uint random_seed,
-                             const std::vector<size_t>& sample_clusters,
-                             uint samples_per_cluster,
-                             bool mahalanobis,
-                             Eigen::MatrixXd sigma):
+                            size_t ci_group_size,
+                            double sample_fraction,
+                            uint mtry,
+                            uint min_node_size,
+                            bool honesty,
+                            double honesty_fraction,
+                            bool honesty_prune_leaves,
+                            double alpha,
+                            double imbalance_penalty,
+                            uint num_threads,
+                            uint random_seed,                    // random_seed -> seed
+                            const std::vector<size_t>& sample_clusters,  // sample_clusters -> clusters
+                            uint samples_per_cluster,
+                            bool mahalanobis,
+                            const Eigen::MatrixXd& sigma,  // 참조형으로 수정
+                            size_t num_treatments = 2):
     ci_group_size(ci_group_size),
     sample_fraction(sample_fraction),
     tree_options(mtry, min_node_size, honesty, honesty_fraction, honesty_prune_leaves, alpha, imbalance_penalty,
-        mahalanobis, sigma),
-    sampling_options(samples_per_cluster, sample_clusters)
+        mahalanobis, sigma, num_treatments), 
+    sampling_options(samples_per_cluster, sample_clusters), 
+    num_treatments(num_treatments)
     {
 
   this->num_threads = validate_num_threads(num_threads);
@@ -102,6 +105,10 @@ uint ForestOptions::validate_num_threads(uint num_threads) {
   } else {
     throw std::runtime_error("A negative number of threads was provided.");
   }
+}
+
+size_t ForestOptions::get_num_treatments() const {
+  return num_treatments;
 }
 
 } // namespace grf

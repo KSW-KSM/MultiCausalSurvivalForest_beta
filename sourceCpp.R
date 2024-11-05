@@ -1,4 +1,4 @@
-default_dir = "/Users/seong-ugang/Desktop/학교/공모전/konkuk_lab/compriskCRgrf"
+default_dir = "/Users/imac/Documents/연구실/조영주교수님_Lab/MultiCausalSurvivalForest/MultiCausalSurvivalForest_beta"
 install.packages("Rcpp")
 
 run <- function(dir = default_dir) {

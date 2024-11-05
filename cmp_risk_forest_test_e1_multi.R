@@ -1,3 +1,5 @@
+setwd("/Users/imac/Documents/연구실/조영주교수님_Lab/MultiCausalSurvivalForest/MultiCausalSurvivalForest_beta")
+source("testcode_multi.R")
  if (is.null(horizon) || !is.numeric(horizon) || length(horizon) != 1) {
     stop("The `horizon` argument defining the estimand is required.")
   }
@@ -280,7 +282,6 @@ Q.hat[, horizon.cr.index:ncol(Q.hat)] <- 0
   validate_observations(eta[["numerator2"]], X)
   validate_observations(eta[["denominator2"]], X)
   
-  source("~/Desktop/학교/공모전/konkuk_lab/compriskCRgrf/input_utilities.R")
   # ================================================================================#
   data <- create_train_multi_matrices(X,
                                 treatment1 = W.centered1,
@@ -322,7 +323,8 @@ Q.hat[, horizon.cr.index:ncol(Q.hat)] <- 0
                ci.group.size = ci.group.size,
                compute.oob.predictions = compute.oob.predictions,
                num.threads = num.threads,
-               seed = seed, mahalanobis, sigma = sigma_)
+               seed = seed, mahalanobis, sigma = sigma_
+               )
 
   #forest <- do.call.rcpp(causal_survival_train, c(data, args))#causal_survival_train -> muti_causal_survival_train 으로 구현
   forest <- do.call.rcpp(multi_causal_survival_train, c(data, args))

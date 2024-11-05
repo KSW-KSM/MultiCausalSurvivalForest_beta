@@ -9,7 +9,6 @@
 
 
 namespace grf {
-class Data;
 void MultiCausalSurvivalPredictionStrategy::set_num_treatments(size_t num_treatments) {
   this->num_treatments = num_treatments;
 }

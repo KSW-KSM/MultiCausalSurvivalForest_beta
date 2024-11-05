@@ -24,9 +24,9 @@
 #include "../sampling/RandomSampler.h"
 #include "../prediction/PredictionValues.h"
 #include "../splitting/SplittingRule.h"
+#include "../commons/Data.h"
 
 namespace grf {
-class Data;
 
 class Tree {
 public:

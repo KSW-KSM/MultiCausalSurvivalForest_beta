@@ -27,22 +27,24 @@ namespace grf {
 
 class ForestOptions {
 public:
-  ForestOptions(uint num_trees,
-                size_t ci_group_size,
-                double sample_fraction,
-                uint mtry,
-                uint min_node_size,
-                bool honesty,
-                double honesty_fraction,
-                bool honesty_prune_leaves,
-                double alpha,
-                double imbalance_penalty,
-                uint num_threads,
-                uint random_seed,
-                const std::vector<size_t>& sample_clusters,
-                uint samples_per_cluster,
-                bool mahalanobis,
-                Eigen::MatrixXd sigma);
+    ForestOptions(uint num_trees,
+                  size_t ci_group_size,  // uint -> size_t로 통일
+                  double sample_fraction,
+                  uint mtry,
+                  uint min_node_size,
+                  bool honesty,
+                  double honesty_fraction,
+                  bool honesty_prune_leaves,
+                  double alpha,
+                  double imbalance_penalty,
+                  uint num_threads,
+                  uint random_seed,
+                  const std::vector<size_t>& sample_clusters,
+                  uint samples_per_cluster,
+                  bool mahalanobis,
+                  const Eigen::MatrixXd& sigma,
+                  size_t num_treatments
+                  );
 
   static uint validate_num_threads(uint num_threads);
 
@@ -56,6 +58,8 @@ public:
   uint get_num_threads() const;
   uint get_random_seed() const;
 
+  size_t get_num_treatments() const;
+
 private:
   uint num_trees;
   size_t ci_group_size;
@@ -66,6 +70,7 @@ private:
 
   uint num_threads;
   uint random_seed;
+  size_t num_treatments; //추가
 };
 
 } // namespace grf
