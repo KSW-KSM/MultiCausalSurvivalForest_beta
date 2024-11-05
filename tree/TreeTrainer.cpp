@@ -37,7 +37,7 @@ namespace grf {
         const std::vector<size_t>& clusters,
         const TreeOptions& options) const {
         
-    Rcpp::Rcout << "\n=== Starting Tree Training ===" << std::endl;
+    Rcpp::Rcout << "\n=== Starting Tree Training(MultiCausalSurvivalForestSplittingRuleFactory) ===" << std::endl;
     Rcpp::Rcout << "Input clusters size: " << clusters.size() << std::endl;
     
     try {
@@ -92,6 +92,7 @@ namespace grf {
                            << ", Open nodes: " << num_open_nodes << std::endl;
             }
             
+            // 노드 분할 여기서 1차에러 발생
             bool is_leaf_node = split_node(i, data, splitting_rule, sampler,
                                          child_nodes, nodes, split_vars, 
                                          split_values, send_missing_left,
@@ -177,7 +178,7 @@ namespace grf {
             split_mtry);
     }
 
-    bool TreeTrainer::split_node(size_t node,
+ bool TreeTrainer::split_node(size_t node,
         const Data& data,
         const std::unique_ptr<SplittingRule>& splitting_rule,
         RandomSampler& sampler,
@@ -189,9 +190,16 @@ namespace grf {
         Eigen::ArrayXXd& responses_by_sample,
         const TreeOptions& options) const {
 
+        Rcpp::Rcout << "\n=== Processing Node " << node << " ===" << std::endl;
+        Rcpp::Rcout << "Current node sample size: " << samples[node].size() << std::endl;
+
+        // 분할 변수 서브셋 생성
         std::vector<size_t> possible_split_vars;
         create_split_variable_subset(possible_split_vars, sampler, data, options.get_mtry());
+        Rcpp::Rcout << "Number of candidate split variables: " << possible_split_vars.size() << std::endl;
 
+        // 내부 분할 시도
+        Rcpp::Rcout << "Attempting internal split..." << std::endl;
         bool stop = split_node_internal(node,
             data,
             splitting_rule,
@@ -205,7 +213,9 @@ namespace grf {
             options.get_mahalanobis(),
             options.get_sigma()
         );
+
         if (stop) {
+            Rcpp::Rcout << "Could not find valid split. Creating leaf node." << std::endl;
             return true;
         }
 
@@ -213,6 +223,12 @@ namespace grf {
         double split_value = split_values[node];
         bool send_na_left = send_missing_left[node];
 
+        Rcpp::Rcout << "Split found:" << std::endl;
+        Rcpp::Rcout << "- Split variable: " << split_var << std::endl;
+        Rcpp::Rcout << "- Split value: " << split_value << std::endl;
+        Rcpp::Rcout << "- Send NA left: " << (send_na_left ? "true" : "false") << std::endl;
+
+        // 자식 노드 생성
         size_t left_child_node = samples.size();
         child_nodes[0][node] = left_child_node;
         create_empty_node(child_nodes, samples, split_vars, split_values, send_missing_left);
@@ -221,77 +237,127 @@ namespace grf {
         child_nodes[1][node] = right_child_node;
         create_empty_node(child_nodes, samples, split_vars, split_values, send_missing_left);
 
-        // For each sample in node, assign to left or right child
-        // Ordered: left is <= splitval and right is > splitval
+        Rcpp::Rcout << "Created child nodes:" << std::endl;
+        Rcpp::Rcout << "- Left child node index: " << left_child_node << std::endl;
+        Rcpp::Rcout << "- Right child node index: " << right_child_node << std::endl;
+
+        // 샘플 분할
+        size_t left_count = 0;
+        size_t right_count = 0;
         for (auto& sample : samples[node]) {
             double value = data.get(sample, split_var);
-            if (
-                (value <= split_value) || // ordinary split
-                (send_na_left && std::isnan(value)) || // are we sending NaN left
-                (std::isnan(split_value) && std::isnan(value)) // are we splitting on NaN, then always send NaNs left
-                ) {
+            if ((value <= split_value) || 
+                (send_na_left && std::isnan(value)) || 
+                (std::isnan(split_value) && std::isnan(value))) {
                 samples[left_child_node].push_back(sample);
-            }
-            else {
+                left_count++;
+            } else {
                 samples[right_child_node].push_back(sample);
+                right_count++;
             }
         }
 
-        // No terminal node
+        Rcpp::Rcout << "Sample distribution after split:" << std::endl;
+        Rcpp::Rcout << "- Left child size: " << left_count << std::endl;
+        Rcpp::Rcout << "- Right child size: " << right_count << std::endl;
+        Rcpp::Rcout << "=== Node Processing Complete ===\n" << std::endl;
+
         return false;
     }
 
     bool TreeTrainer::split_node_internal(size_t node,
-        const Data& data,
-        const std::unique_ptr<SplittingRule>& splitting_rule,
-        const std::vector<size_t>& possible_split_vars,
-        const std::vector<std::vector<size_t>>& samples,
-        std::vector<size_t>& split_vars,
-        std::vector<double>& split_values,
-        std::vector<bool>& send_missing_left,
-        Eigen::ArrayXXd& responses_by_sample,
-        uint min_node_size,
-        bool mahalanobis,
-        Eigen::MatrixXd sigma
-        ) const {
-        // Check node size, stop if maximum reached
-        if (samples[node].size() <= min_node_size) {
-            split_values[node] = -1.0;
-            return true;
-        }
-
-        bool stop = relabeling_strategy->relabel(samples[node], data, responses_by_sample);
-        //Rcpp::Rcout << "response_by_sample: " << responses_by_sample << '\n';
-
-        if (stop || splitting_rule->find_best_split(data,
-            node,
-            possible_split_vars,
-            responses_by_sample,
-            samples,
-            split_vars,
-            split_values,
-            send_missing_left,
-            mahalanobis,
-            sigma)
-            ) {
-            split_values[node] = -1.0;
-            return true;
-        }
-
-        return false;
+    const Data& data,
+    const std::unique_ptr<SplittingRule>& splitting_rule,
+    const std::vector<size_t>& possible_split_vars,
+    const std::vector<std::vector<size_t>>& samples,
+    std::vector<size_t>& split_vars,
+    std::vector<double>& split_values,
+    std::vector<bool>& send_missing_left,
+    Eigen::ArrayXXd& responses_by_sample,
+    uint min_node_size,
+    bool mahalanobis,
+    Eigen::MatrixXd sigma
+    ) const {
+    
+    Rcpp::Rcout << "\n=== Split Node Internal for Node(MultiCausalSurvivalForestSplittingRuleFactory) " << node << " ===" << std::endl;
+    Rcpp::Rcout << "Current node sample size: " << samples[node].size() << std::endl;
+    Rcpp::Rcout << "Minimum node size: " << min_node_size << std::endl;
+    
+    // 노드 크기 체크
+    if (samples[node].size() <= min_node_size) {
+        Rcpp::Rcout << "Node size <= min_node_size. Stopping split." << std::endl;
+        split_values[node] = -1.0;
+        return true;
     }
+
+    Rcpp::Rcout << "Starting relabeling process..." << std::endl;
+    bool stop = relabeling_strategy->relabel(samples[node], data, responses_by_sample);
+    
+    if (stop) {
+        Rcpp::Rcout << "Relabeling strategy indicated to stop." << std::endl;
+        split_values[node] = -1.0;
+        return true;
+    }
+
+    Rcpp::Rcout << "Finding best split with parameters:" << std::endl;
+    Rcpp::Rcout << "- Number of possible split variables: " << possible_split_vars.size() << std::endl;
+    Rcpp::Rcout << "- Mahalanobis: " << (mahalanobis ? "true" : "false") << std::endl;
+    Rcpp::Rcout << "- Sigma matrix dimensions: " << sigma.rows() << "x" << sigma.cols() << std::endl;
+
+    // 노드 분할 여기서 2차 에러 발생
+    bool split_stop = splitting_rule->find_best_split(data,
+        node,
+        possible_split_vars,
+        responses_by_sample,
+        samples,
+        split_vars,
+        split_values,
+        send_missing_left,
+        mahalanobis,
+        sigma);
+
+    if (split_stop) {
+        Rcpp::Rcout << "Could not find valid split. Stopping." << std::endl;
+        split_values[node] = -1.0;
+        return true;
+    }
+
+    Rcpp::Rcout << "Successfully found split:" << std::endl;
+    Rcpp::Rcout << "- Split variable: " << split_vars[node] << std::endl;
+    Rcpp::Rcout << "- Split value: " << split_values[node] << std::endl;
+    Rcpp::Rcout << "=== Split Node Internal Complete ===\n" << std::endl;
+
+    return false;
+}
 
     void TreeTrainer::create_empty_node(std::vector<std::vector<size_t>>& child_nodes,
         std::vector<std::vector<size_t>>& samples,
         std::vector<size_t>& split_vars,
         std::vector<double>& split_values,
         std::vector<bool>& send_missing_left) const {
+        
+        Rcpp::Rcout << "\n=== Creating Empty Node ===" << std::endl;
+        Rcpp::Rcout << "Current sizes before creation:" << std::endl;
+        Rcpp::Rcout << "- Child nodes size: " << child_nodes[0].size() << std::endl;
+        Rcpp::Rcout << "- Samples size: " << samples.size() << std::endl;
+        Rcpp::Rcout << "- Split vars size: " << split_vars.size() << std::endl;
+        Rcpp::Rcout << "- Split values size: " << split_values.size() << std::endl;
+        Rcpp::Rcout << "- Send missing left size: " << send_missing_left.size() << std::endl;
+
         child_nodes[0].push_back(0);
         child_nodes[1].push_back(0);
         samples.emplace_back();
         split_vars.push_back(0);
         split_values.push_back(0);
         send_missing_left.push_back(true);
+
+        Rcpp::Rcout << "New sizes after creation:" << std::endl;
+        Rcpp::Rcout << "- Child nodes size: " << child_nodes[0].size() << std::endl;
+        Rcpp::Rcout << "- Samples size: " << samples.size() << std::endl;
+        Rcpp::Rcout << "- Split vars size: " << split_vars.size() << std::endl;
+        Rcpp::Rcout << "- Split values size: " << split_values.size() << std::endl;
+        Rcpp::Rcout << "- Send missing left size: " << send_missing_left.size() << std::endl;
+        Rcpp::Rcout << "=== Empty Node Creation Complete ===\n" << std::endl;
     }
 
 } // namespace grf
